@@ -47,6 +47,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chat: {
+          bg: "hsl(var(--chat-bg))",
+          sent: "hsl(var(--chat-bubble-sent))",
+          received: "hsl(var(--chat-bubble-received))",
+        },
+        sidebar: {
+          bg: "hsl(var(--sidebar-bg))",
+        },
+        status: {
+          online: "hsl(var(--online-status))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
