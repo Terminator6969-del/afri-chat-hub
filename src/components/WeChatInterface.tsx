@@ -567,14 +567,170 @@ const WeChatInterface = () => {
     );
   }
 
+  const DiscoverView = () => (
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900">Discover</h1>
+          <div className="flex items-center gap-3">
+            <Search className="w-6 h-6 text-gray-600" />
+            <Plus className="w-6 h-6 text-gray-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Menu Items */}
+      <div className="flex-1 bg-gray-50">
+        {/* Moments */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 flex items-center justify-center relative">
+                <div className="w-4 h-4 rounded-full border-2 border-white"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              </div>
+              <span className="text-gray-900 font-medium">Moments</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
+                <div className="w-6 h-6 rounded-full bg-green-400 border-2 border-white"></div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Channels */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-yellow-500 flex items-center justify-center relative">
+                <div className="text-white text-xs">🦋</div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              </div>
+              <span className="text-gray-900 font-medium">Channels</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">South African Stories</span>
+              <div className="w-6 h-6 rounded-full bg-gray-300"></div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Live Stream */}
+        <div className="bg-white border-b border-gray-200 mb-2">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                <div className="w-4 h-4 rounded-full border-2 border-white"></div>
+              </div>
+              <span className="text-gray-900 font-medium">Live Stream</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Scan */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <div className="w-4 h-4 border border-white rounded"></div>
+              </div>
+              <span className="text-gray-900 font-medium">Scan</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Listen */}
+        <div className="bg-white border-b border-gray-200 mb-2">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                <span className="text-white text-sm">♪</span>
+              </div>
+              <span className="text-gray-900 font-medium">Listen</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Top Stories */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-lg bg-yellow-500 flex items-center justify-center">
+                <span className="text-white text-sm">✦</span>
+              </div>
+              <span className="text-gray-900 font-medium">Top Stories</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="bg-white border-b border-gray-200 mb-2">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-lg bg-red-400 flex items-center justify-center">
+                <span className="text-white text-sm">✨</span>
+              </div>
+              <span className="text-gray-900 font-medium">Search</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Nearby */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-gray-900 font-medium">Nearby</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Games */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-blue-500 flex items-center justify-center transform rotate-45">
+                <div className="w-3 h-3 bg-white rounded-sm transform -rotate-45"></div>
+              </div>
+              <span className="text-gray-900 font-medium">Games</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Mini Programs */}
+        <div className="bg-white">
+          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                <span className="text-white text-xs">⚬</span>
+              </div>
+              <span className="text-gray-900 font-medium">Mini Programs</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (currentView === 'discover') {
     return (
-      <div className="max-w-sm mx-auto h-screen bg-card shadow-2xl overflow-hidden flex items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <Compass className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2 text-foreground">Discover</h3>
-          <p className="text-muted-foreground">Explore new features and content</p>
-        </div>
+      <div className="max-w-sm mx-auto h-screen bg-white shadow-2xl overflow-hidden">
+        <DiscoverView />
       </div>
     );
   }
