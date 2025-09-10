@@ -911,8 +911,8 @@ const WeChatInterface = () => {
           <OfficialAccountsView />
         ) : null}
       </div>
-      {/* Bottom Navigation */}
-      <BottomNavigation />
+      {/* Bottom Navigation - Hide only when in chat view */}
+      {!selectedChat && <BottomNavigation />}
     </div>
   );
 };
