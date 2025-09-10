@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet } from 'lucide-react';
+import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet, Mic, FileText, UserPlus, ScanLine, X, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const WeChatInterface = () => {
@@ -8,6 +8,12 @@ const WeChatInterface = () => {
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [moments, setMoments] = useState([]);
+  const [newMoment, setNewMoment] = useState('');
+  const [showNewMoment, setShowNewMoment] = useState(false);
   const messagesEndRef = useRef(null);
 
   const contacts = [
@@ -146,6 +152,31 @@ const WeChatInterface = () => {
 
   const emojis = ['😊', '😂', '❤️', '👍', '🙏', '😍', '🤔', '😎', '🎉', '🔥', '💯', '✨', '🌟', '💪', '👌', '🤝'];
 
+  // Initialize with sample moments data
+  useEffect(() => {
+    setMoments([
+      {
+        id: 1,
+        user: 'Sophia Norman',
+        avatar: '🇿🇦',
+        content: 'Beautiful sunset at Camps Bay today! 🌅',
+        image: '🏖️',
+        time: '2 hours ago',
+        likes: 12,
+        comments: 3
+      },
+      {
+        id: 2,
+        user: 'Thabo Mthembu',
+        avatar: '👨🏽‍💻',
+        content: 'Just finished an amazing braai with friends! Nothing beats South African hospitality 🔥🥩',
+        time: '4 hours ago',
+        likes: 8,
+        comments: 1
+      }
+    ]);
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -195,6 +226,94 @@ const WeChatInterface = () => {
     setShowEmojiPicker(false);
   };
 
+  const handleVoiceRecord = () => {
+    setIsRecording(!isRecording);
+    if (!isRecording) {
+      // Start recording
+      setTimeout(() => {
+        setIsRecording(false);
+        // Simulate voice message
+        sendVoiceMessage();
+      }, 2000);
+    }
+  };
+
+  const sendVoiceMessage = () => {
+    if (!selectedChat) return;
+
+    const newMessage = {
+      id: Date.now(),
+      sender: 'me',
+      text: '🎤 Voice message (2s)',
+      time: new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+      type: 'voice'
+    };
+
+    const updatedChats = chats.map(chat =>
+      chat.id === selectedChat.id
+        ? {
+            ...chat,
+            messages: [...chat.messages, newMessage],
+            lastMessage: '🎤 Voice message',
+            time: newMessage.time
+          }
+        : chat
+    );
+
+    setChats(updatedChats);
+    setSelectedChat({
+      ...selectedChat,
+      messages: [...selectedChat.messages, newMessage]
+    });
+  };
+
+  const handleImageShare = () => {
+    if (!selectedChat) return;
+
+    const newMessage = {
+      id: Date.now(),
+      sender: 'me',
+      text: '📷 Photo',
+      time: new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+      type: 'image'
+    };
+
+    const updatedChats = chats.map(chat =>
+      chat.id === selectedChat.id
+        ? {
+            ...chat,
+            messages: [...chat.messages, newMessage],
+            lastMessage: '📷 Photo',
+            time: newMessage.time
+          }
+        : chat
+    );
+
+    setChats(updatedChats);
+    setSelectedChat({
+      ...selectedChat,
+      messages: [...selectedChat.messages, newMessage]
+    });
+  };
+
+  const postMoment = () => {
+    if (!newMoment.trim()) return;
+
+    const moment = {
+      id: Date.now(),
+      user: 'Thabo Mthembu',
+      avatar: '👨🏽‍💻',
+      content: newMoment,
+      time: 'Just now',
+      likes: 0,
+      comments: 0
+    };
+
+    setMoments(prev => [moment, ...prev]);
+    setNewMoment('');
+    setShowNewMoment(false);
+  };
+
   const ChatsList = () => (
     <div className="h-full flex flex-col bg-gradient-to-br from-background to-muted/20 relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -209,9 +328,59 @@ const WeChatInterface = () => {
             <button className="w-9 h-9 bg-muted/50 hover:bg-muted transition-all duration-200 rounded-full flex items-center justify-center hover:scale-110 active:scale-95">
               <Users className="w-4 h-4 text-muted-foreground" />
             </button>
-            <button className="w-9 h-9 bg-muted/50 hover:bg-muted transition-all duration-200 rounded-full flex items-center justify-center hover:scale-110 active:scale-95">
-              <Plus className="w-4 h-4 text-muted-foreground" />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowPlusMenu(!showPlusMenu)}
+                className="w-9 h-9 bg-muted/50 hover:bg-muted transition-all duration-200 rounded-full flex items-center justify-center hover:scale-110 active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-muted-foreground" />
+              </button>
+              
+              {showPlusMenu && (
+                <div className="absolute top-12 right-0 bg-background/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-lg p-2 z-50 min-w-[160px] animate-scale-in">
+                  <button 
+                    onClick={() => {
+                      setShowPlusMenu(false);
+                      // Handle new chat
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
+                  >
+                    <UserPlus className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">New Chat</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowPlusMenu(false);
+                      // Handle add contacts
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
+                  >
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Add Contacts</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowPlusMenu(false);
+                      setShowQRScanner(true);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
+                  >
+                    <ScanLine className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Scan</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowPlusMenu(false);
+                      // Handle money transfer
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
+                  >
+                    <Wallet className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Money</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -474,11 +643,23 @@ const WeChatInterface = () => {
         
         <div className="flex items-center gap-3">
           <div className="flex gap-2">
-            <button className="w-8 h-8 bg-muted/50 hover:bg-muted rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95">
+            <button 
+              onClick={handleImageShare}
+              className="w-8 h-8 bg-muted/50 hover:bg-muted rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+            >
               <Camera className="w-4 h-4 text-muted-foreground" />
             </button>
             <button className="w-8 h-8 bg-muted/50 hover:bg-muted rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95">
               <Paperclip className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button 
+              onClick={handleVoiceRecord}
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95",
+                isRecording ? "bg-red-500 animate-pulse" : "bg-muted/50 hover:bg-muted"
+              )}
+            >
+              <Mic className={cn("w-4 h-4", isRecording ? "text-white" : "text-muted-foreground")} />
             </button>
           </div>
           <div className="flex-1 relative">
@@ -535,7 +716,10 @@ const WeChatInterface = () => {
       <div className="flex-1 bg-gray-50">
         {/* Moments */}
         <div className="bg-white border-b border-gray-100">
-          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => setCurrentView('moments')}
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 flex items-center justify-center relative">
                 <div className="w-4 h-4 rounded-full border-2 border-white"></div>
@@ -550,7 +734,7 @@ const WeChatInterface = () => {
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Channels */}
@@ -586,15 +770,18 @@ const WeChatInterface = () => {
 
         {/* Scan */}
         <div className="bg-white border-b border-gray-100">
-          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => setShowQRScanner(true)}
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                <div className="w-4 h-4 border border-white rounded"></div>
+                <ScanLine className="w-4 h-4 text-white" />
               </div>
               <span className="text-gray-900 font-medium">Scan</span>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
-          </div>
+          </button>
         </div>
 
         {/* Listen */}
@@ -677,6 +864,125 @@ const WeChatInterface = () => {
       </div>
     </div>
   );
+
+  const MomentsView = () => (
+    <div className="h-full flex flex-col bg-gradient-to-br from-background to-muted/20">
+      {/* Header */}
+      <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setCurrentView('discover')}
+              className="w-8 h-8 hover:bg-muted rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+            >
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <h1 className="text-xl font-semibold text-foreground">Moments</h1>
+          </div>
+          <button 
+            onClick={() => setShowNewMoment(true)}
+            className="w-8 h-8 bg-muted/50 hover:bg-muted transition-all duration-200 rounded-full flex items-center justify-center hover:scale-110 active:scale-95"
+          >
+            <Plus className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* New Moment Composer */}
+      {showNewMoment && (
+        <div className="bg-background/90 backdrop-blur-xl border-b border-border/50 p-4 animate-slide-down">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-lg">
+              <span className="text-white">👨🏽‍💻</span>
+            </div>
+            <div className="flex-1">
+              <textarea
+                value={newMoment}
+                onChange={(e) => setNewMoment(e.target.value)}
+                placeholder="Share your thoughts..."
+                className="w-full bg-muted/30 border-0 rounded-xl p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:bg-background focus:shadow-md focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
+                rows={3}
+              />
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex gap-2">
+                  <button className="w-8 h-8 bg-muted/50 hover:bg-muted rounded-full flex items-center justify-center transition-all">
+                    <Camera className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                  <button className="w-8 h-8 bg-muted/50 hover:bg-muted rounded-full flex items-center justify-center transition-all">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowNewMoment(false)}
+                    className="px-4 py-2 text-muted-foreground hover:text-foreground transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={postMoment}
+                    disabled={!newMoment.trim()}
+                    className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground px-6 py-2 rounded-xl hover:from-primary/90 hover:to-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Moments Feed */}
+      <div className="flex-1 overflow-y-auto">
+        {moments.map((moment, index) => (
+          <div 
+            key={moment.id} 
+            className="bg-background/60 backdrop-blur-sm border-b border-border/30 p-4 animate-fade-in"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-muted to-muted/70 rounded-2xl flex items-center justify-center text-lg">
+                {moment.avatar}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-foreground">{moment.user}</h3>
+                  <span className="text-xs text-muted-foreground">{moment.time}</span>
+                </div>
+                <p className="text-foreground mb-3 leading-relaxed">{moment.content}</p>
+                {moment.image && (
+                  <div className="mb-3 w-32 h-32 bg-gradient-to-br from-muted to-muted/70 rounded-xl flex items-center justify-center text-4xl">
+                    {moment.image}
+                  </div>
+                )}
+                <div className="flex items-center gap-6 text-muted-foreground">
+                  <button className="flex items-center gap-2 hover:text-primary transition-all">
+                    <Heart className="w-4 h-4" />
+                    <span className="text-sm">{moment.likes}</span>
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-primary transition-all">
+                    <span className="text-sm">💬 {moment.comments}</span>
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-primary transition-all">
+                    <span className="text-sm">Share</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (currentView === 'moments') {
+    return (
+      <div className="max-w-sm mx-auto h-screen bg-white shadow-2xl overflow-hidden">
+        <MomentsView />
+      </div>
+    );
+  }
 
   if (currentView === 'discover') {
     return (
@@ -911,6 +1217,61 @@ const WeChatInterface = () => {
           <OfficialAccountsView />
         ) : null}
       </div>
+
+      {/* QR Scanner Modal */}
+      {showQRScanner && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
+          <div className="bg-background/90 backdrop-blur-xl border border-border/50 rounded-2xl p-6 m-4 max-w-sm w-full animate-scale-in">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-foreground">QR Code Scanner</h2>
+              <button 
+                onClick={() => setShowQRScanner(false)}
+                className="w-8 h-8 hover:bg-muted rounded-full flex items-center justify-center transition-all"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            
+            <div className="relative mb-6">
+              <div className="w-full h-48 bg-gradient-to-br from-muted to-muted/70 rounded-xl flex items-center justify-center relative overflow-hidden">
+                {/* Simulated camera view */}
+                <div className="absolute inset-4 border-2 border-primary rounded-xl"></div>
+                <div className="absolute inset-8 border border-primary/50 rounded-lg"></div>
+                <ScanLine className="w-12 h-12 text-primary animate-pulse" />
+                
+                {/* Scanning animation */}
+                <div className="absolute top-8 left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse"></div>
+              </div>
+              
+              <div className="absolute top-2 left-2 right-2 flex justify-between">
+                <button className="w-8 h-8 bg-black/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <CircleDot className="w-4 h-4 text-white" />
+                </button>
+                <button className="w-8 h-8 bg-black/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <Camera className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+            
+            <p className="text-center text-muted-foreground text-sm mb-4">
+              Position the QR code within the frame to scan
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowQRScanner(false)}
+                className="flex-1 bg-muted/50 hover:bg-muted text-foreground py-3 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button className="flex-1 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-3 rounded-xl hover:from-primary/90 hover:to-primary transition-all">
+                Gallery
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Navigation - Hide only when in chat view */}
       {!selectedChat && <BottomNavigation />}
     </div>
