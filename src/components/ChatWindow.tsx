@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, MoreVertical, Phone, Video } from 'lucide-react';
+import { Send, Smile, Paperclip, MoreVertical, Phone, Video, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { conversations, currentUser } from '@/data/dummyData';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { MessageSkeleton } from '@/components/LoadingStates';
 
 interface ChatWindowProps {
   conversationId: string;
@@ -11,13 +14,27 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
   const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [swipedMessageId, setSwipedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { triggerHaptic } = useHapticFeedback();
   
   const conversation = conversations.find(c => c.id === conversationId);
   
   useEffect(() => {
+    if (conversation) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setMessages(conversation.messages);
+        setIsLoading(false);
+      }, 800);
+    }
+  }, [conversation]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversation?.messages]);
+  }, [messages]);
 
   if (!conversation) {
     return (
@@ -44,10 +61,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      // In a real app, this would send the message to the backend
+      triggerHaptic('impactLight');
       console.log('Sending message:', newMessage);
       setNewMessage('');
     }
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    triggerHaptic('impactMedium');
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    setSwipedMessageId(null);
+  };
+
+  const handleMarkAsRead = (messageId: string) => {
+    triggerHaptic('selection');
+    setSwipedMessageId(null);
   };
 
   const formatMessageTime = (date: Date) => {
@@ -95,43 +123,74 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {conversation.messages.map((message) => {
-          const isCurrentUser = message.senderId === currentUser.id;
-          const sender = conversation.participants.find(p => p.id === message.senderId) || currentUser;
-          
-          return (
-            <div
-              key={message.id}
-              className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex gap-2 max-w-[70%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                {!isCurrentUser && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={sender.avatar} alt={sender.name} />
-                    <AvatarFallback className="text-xs">
-                      {sender.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                
+        {isLoading ? (
+          <MessageSkeleton />
+        ) : (
+          messages.map((message) => {
+            const isCurrentUser = message.senderId === currentUser.id;
+            const sender = conversation.participants.find(p => p.id === message.senderId) || currentUser;
+            
+            const MessageItem = ({ message }: { message: any }) => {
+              const { swipeOffset, touchHandlers } = useSwipeGesture({
+                onSwipeLeft: () => !isCurrentUser && handleDeleteMessage(message.id),
+                onSwipeRight: () => !isCurrentUser && handleMarkAsRead(message.id)
+              });
+
+              return (
                 <div
-                  className={`rounded-2xl p-3 ${
-                    isCurrentUser
-                      ? 'bg-chat-sent text-white rounded-br-md'
-                      : 'bg-chat-received text-foreground rounded-bl-md'
-                  }`}
+                  className={`relative overflow-hidden ${swipedMessageId === message.id ? 'bg-muted/20' : ''}`}
+                  style={{ transform: `translateX(${swipeOffset}px)` }}
+                  {...touchHandlers}
                 >
-                  <p className="text-sm">{message.text}</p>
-                  <p className={`text-xs mt-1 ${
-                    isCurrentUser ? 'text-green-100' : 'text-muted-foreground'
-                  }`}>
-                    {formatMessageTime(message.timestamp)}
-                  </p>
+                  {/* Swipe Action Indicators */}
+                  {swipeOffset < -50 && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-xs">Delete</span>
+                    </div>
+                  )}
+                  {swipeOffset > 50 && (
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-2 text-primary">
+                      <span className="text-xs">Mark Read</span>
+                    </div>
+                  )}
+                  
+                  <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex gap-2 max-w-[70%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                      {!isCurrentUser && (
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={sender.avatar} alt={sender.name} />
+                          <AvatarFallback className="text-xs">
+                            {sender.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      
+                      <div
+                        className={`rounded-2xl p-3 transition-all ${
+                          isCurrentUser
+                            ? 'bg-chat-sent text-white rounded-br-md'
+                            : 'bg-chat-received text-foreground rounded-bl-md'
+                        }`}
+                      >
+                        <p className="text-sm">{message.text}</p>
+                        <p className={`text-xs mt-1 ${
+                          isCurrentUser ? 'text-green-100' : 'text-muted-foreground'
+                        }`}>
+                          {formatMessageTime(message.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            };
+            
+            return (
+              <MessageItem key={message.id} message={message} />
           );
-        })}
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 

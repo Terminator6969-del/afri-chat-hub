@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { conversations, currentUser } from '@/data/dummyData';
 import { formatDistanceToNow } from 'date-fns';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { ConversationSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
 
 interface ConversationsListProps {
   selectedConversation: string | null;
@@ -13,6 +16,26 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
   selectedConversation,
   onSelectConversation
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [filteredConversations, setFilteredConversations] = useState(conversations);
+  const { triggerHaptic } = useHapticFeedback();
+
+  const handleRefresh = async () => {
+    triggerHaptic('medium');
+    setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setFilteredConversations([...conversations]);
+    setIsLoading(false);
+    triggerHaptic('notificationSuccess');
+  };
+
+  const { containerRef, isRefreshing, pullDistance } = usePullToRefresh(handleRefresh);
+
+  const handleConversationSelect = (conversationId: string) => {
+    triggerHaptic('selection');
+    onSelectConversation(conversationId);
+  };
   const formatTime = (date: Date) => {
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
@@ -39,8 +62,17 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
-        {conversations.map((conversation) => {
+      <div 
+        ref={containerRef}
+        className="flex-1 overflow-y-auto relative"
+        style={{ transform: `translateY(${pullDistance > 0 ? pullDistance * 0.5 : 0}px)` }}
+      >
+        <PullRefreshIndicator pullDistance={pullDistance} />
+        
+        {isLoading || isRefreshing ? (
+          <ConversationSkeleton />
+        ) : (
+          filteredConversations.map((conversation) => {
           const otherUser = conversation.isGroup 
             ? null 
             : conversation.participants.find(p => p.id !== currentUser.id);
@@ -61,7 +93,7 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
           return (
             <div
               key={conversation.id}
-              onClick={() => onSelectConversation(conversation.id)}
+              onClick={() => handleConversationSelect(conversation.id)}
               className={`p-4 border-b border-border cursor-pointer transition-colors hover:bg-muted/50 ${
                 selectedConversation === conversation.id ? 'bg-muted' : ''
               }`}
@@ -101,7 +133,8 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
               </div>
             </div>
           );
-        })}
+          })
+        )}
       </div>
     </div>
   );

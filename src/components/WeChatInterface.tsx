@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet, Mic, FileText, UserPlus, ScanLine, X, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { MomentsSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
 
 const WeChatInterface = () => {
   const [currentView, setCurrentView] = useState('chats');
@@ -14,7 +17,9 @@ const WeChatInterface = () => {
   const [moments, setMoments] = useState([]);
   const [newMoment, setNewMoment] = useState('');
   const [showNewMoment, setShowNewMoment] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const { triggerHaptic } = useHapticFeedback();
 
   const contacts = [
     {
@@ -149,6 +154,7 @@ const WeChatInterface = () => {
   ];
 
   const [chats, setChats] = useState(contacts);
+  const [filteredChats, setFilteredChats] = useState(contacts);
 
   const emojis = ['😊', '😂', '❤️', '👍', '🙏', '😍', '🤔', '😎', '🎉', '🔥', '💯', '✨', '🌟', '💪', '👌', '🤝'];
 
@@ -390,7 +396,15 @@ const WeChatInterface = () => {
             type="text"
             placeholder="Search conversations..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              const filtered = chats.filter(chat => 
+                chat.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                (chat.lastMessage && chat.lastMessage.toLowerCase().includes(e.target.value.toLowerCase())) ||
+                chat.messages?.some(msg => msg.text.toLowerCase().includes(e.target.value.toLowerCase()))
+              );
+              setFilteredChats(filtered);
+            }}
             className="w-full bg-muted/30 backdrop-blur-sm border-0 rounded-xl py-2.5 pl-10 pr-4 text-foreground placeholder-muted-foreground focus:outline-none focus:bg-background focus:shadow-md focus:ring-2 focus:ring-primary/20 transition-all duration-200"
           />
         </div>
@@ -424,15 +438,13 @@ const WeChatInterface = () => {
 
       {/* Chat List */}
       <div className="relative z-10 flex-1 overflow-y-auto">
-        {chats
-          .filter(chat => 
-            chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (chat.lastMessage && chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
-          )
-          .map((chat, index) => (
+        {filteredChats.map((chat, index) => (
           <div
             key={chat.id}
-            onClick={() => setSelectedChat(chat)}
+            onClick={() => {
+              triggerHaptic('selection');
+              setSelectedChat(chat);
+            }}
             className={cn(
               "flex items-center gap-3 p-4 hover:bg-background/60 cursor-pointer border-b border-border/30 backdrop-blur-sm transition-all duration-200 hover:shadow-sm",
               "animate-fade-in",
@@ -935,7 +947,10 @@ const WeChatInterface = () => {
 
       {/* Moments Feed */}
       <div className="flex-1 overflow-y-auto">
-        {moments.map((moment, index) => (
+        {isLoading ? (
+          <MomentsSkeleton />
+        ) : (
+          moments.map((moment, index) => (
           <div 
             key={moment.id} 
             className="bg-background/60 backdrop-blur-sm border-b border-border/30 p-4 animate-fade-in"
@@ -971,7 +986,8 @@ const WeChatInterface = () => {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

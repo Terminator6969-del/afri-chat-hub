@@ -1,14 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Phone } from 'lucide-react';
 import { users } from '@/data/dummyData';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { ContactSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
 
 interface ContactsListProps {
   onStartChat: (userId: string) => void;
 }
 
 const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState(users);
+  const { triggerHaptic } = useHapticFeedback();
+
+  const handleRefresh = async () => {
+    triggerHaptic('medium');
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    setFilteredUsers([...users]);
+    setIsLoading(false);
+    triggerHaptic('notificationSuccess');
+  };
+
+  const { containerRef, isRefreshing, pullDistance } = usePullToRefresh(handleRefresh);
+
+  const handleStartChat = (userId: string) => {
+    triggerHaptic('selection');
+    onStartChat(userId);
+  };
+
+  const handleCallUser = () => {
+    triggerHaptic('impactMedium');
+    // Handle call functionality
+  };
+
   return (
     <div className="flex-1 bg-card">
       {/* Header */}
@@ -18,8 +46,17 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
       </div>
 
       {/* Contacts List */}
-      <div className="overflow-y-auto">
-        {users.map((user) => (
+      <div 
+        ref={containerRef}
+        className="overflow-y-auto relative"
+        style={{ transform: `translateY(${pullDistance > 0 ? pullDistance * 0.5 : 0}px)` }}
+      >
+        <PullRefreshIndicator pullDistance={pullDistance} />
+        
+        {isLoading || isRefreshing ? (
+          <ContactSkeleton />
+        ) : (
+          filteredUsers.map((user) => (
           <div
             key={user.id}
             className="p-4 border-b border-border hover:bg-muted/50 transition-colors"
@@ -51,7 +88,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  onClick={() => onStartChat(user.id)}
+                  onClick={() => handleStartChat(user.id)}
                   title="Start chat"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -59,6 +96,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
                 <Button 
                   variant="ghost" 
                   size="icon"
+                  onClick={handleCallUser}
                   title="Call"
                 >
                   <Phone className="w-4 h-4" />
@@ -66,7 +104,8 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
     </div>
   );

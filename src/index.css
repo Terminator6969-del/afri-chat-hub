@@ -43,6 +43,42 @@ All colors MUST be HSL.
     --online-status: 120 100% 40%;
 
     --radius: 0.5rem;
+    
+    /* Loading states transitions */
+    --loading-shimmer: linear-gradient(90deg, transparent 0%, hsl(var(--muted)) 50%, transparent 100%);
+  }
+
+  /* Pull to refresh states */
+  .pulling {
+    transform: scale(0.98);
+    transition: transform 0.2s ease-out;
+  }
+
+  /* Swipe gesture states */
+  .swipe-action-left {
+    background: linear-gradient(90deg, transparent 0%, hsl(var(--destructive) / 0.1) 100%);
+  }
+
+  .swipe-action-right {
+    background: linear-gradient(270deg, transparent 0%, hsl(var(--primary) / 0.1) 100%);
+  }
+
+  /* Enhanced loading animations */
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--loading-shimmer);
+    animation: shimmer 1.5s infinite;
+    z-index: 1;
 
     --sidebar-background: 0 0% 98%;
 
