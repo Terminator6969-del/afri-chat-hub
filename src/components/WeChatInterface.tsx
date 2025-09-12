@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet, Mic, FileText, UserPlus, ScanLine, X, CircleDot } from 'lucide-react';
+import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet, Mic, FileText, UserPlus, ScanLine, X, CircleDot, Gamepad2, MessageSquare, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { MomentsSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
+import MiniPrograms from '@/components/MiniPrograms';
+import RedPackets from '@/components/RedPackets';
+import GroupManagement from '@/components/GroupManagement';
+import StatusUpdates from '@/components/StatusUpdates';
 
 const WeChatInterface = () => {
   const [currentView, setCurrentView] = useState('chats');
@@ -18,6 +22,8 @@ const WeChatInterface = () => {
   const [newMoment, setNewMoment] = useState('');
   const [showNewMoment, setShowNewMoment] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showGroupManagement, setShowGroupManagement] = useState(false);
+  const [userStatus, setUserStatus] = useState('Available');
   const messagesEndRef = useRef(null);
   const { triggerHaptic } = useHapticFeedback();
 
@@ -377,12 +383,22 @@ const WeChatInterface = () => {
                   <button 
                     onClick={() => {
                       setShowPlusMenu(false);
-                      // Handle money transfer
+                      setCurrentView('red-packets');
                     }}
                     className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
                   >
-                    <Wallet className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-foreground">Money</span>
+                    <Gift className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Red Packet</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowPlusMenu(false);
+                      setCurrentView('mini-programs');
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
+                  >
+                    <Gamepad2 className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground">Mini Programs</span>
                   </button>
                 </div>
               )}
@@ -1196,6 +1212,12 @@ const WeChatInterface = () => {
           </div>
         ) : currentView === 'discover' ? (
           <DiscoverView />
+        ) : currentView === 'mini-programs' ? (
+          <MiniPrograms onBack={() => setCurrentView('chats')} />
+        ) : currentView === 'red-packets' ? (
+          <RedPackets onBack={() => setCurrentView('chats')} />
+        ) : currentView === 'status' ? (
+          <StatusUpdates onBack={() => setCurrentView('me')} />
         ) : currentView === 'me' ? (
           <div className="h-full flex flex-col bg-gradient-to-br from-background to-muted/20">
             {/* Profile Header */}
@@ -1214,6 +1236,19 @@ const WeChatInterface = () => {
             {/* Profile Content */}
             <div className="flex-1 p-4">
               <div className="space-y-2">
+                <button 
+                  onClick={() => setCurrentView('status')}
+                  className="flex items-center justify-between p-3 bg-background/50 hover:bg-background rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Edit3 className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-foreground">Status</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{userStatus}</span>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </button>
                 <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
                   <span className="text-foreground">Pay</span>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -1288,8 +1323,28 @@ const WeChatInterface = () => {
         </div>
       )}
 
-      {/* Bottom Navigation - Hide only when in chat view */}
-      {!selectedChat && <BottomNavigation />}
+      {/* Group Management Modal */}
+      {showGroupManagement && selectedChat?.isGroup && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <GroupManagement 
+            group={{
+              id: selectedChat.id.toString(),
+              name: selectedChat.name,
+              avatar: selectedChat.avatar,
+              members: [
+                { id: '1', name: 'Alice Kim', avatar: '👩🏻', role: 'admin', status: 'online' },
+                { id: '2', name: 'Mike Johnson', avatar: '👨🏻', role: 'member', status: 'offline' },
+                { id: '3', name: 'Sarah Connor', avatar: '👩🏽', role: 'member', status: 'online' },
+                { id: '4', name: 'David Lee', avatar: '👨🏻‍💻', role: 'member', status: 'offline' }
+              ]
+            }}
+            onBack={() => setShowGroupManagement(false)}
+          />
+        </div>
+      )}
+
+      {/* Bottom Navigation - Hide when in chat view or special views */}
+      {!selectedChat && !['mini-programs', 'red-packets', 'status'].includes(currentView) && <BottomNavigation />}
     </div>
   );
 };
