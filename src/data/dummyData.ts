@@ -184,3 +184,30 @@ export const conversations: Conversation[] = [
     }
   }
 ];
+
+// Export mutable state for offline app
+let conversationsState = [...conversations];
+
+export const getConversations = () => conversationsState;
+
+export const updateConversation = (conversationId: string, updates: Partial<Conversation>) => {
+  conversationsState = conversationsState.map(conv =>
+    conv.id === conversationId ? { ...conv, ...updates } : conv
+  );
+  return conversationsState;
+};
+
+export const addMessageToConversation = (conversationId: string, message: Message) => {
+  conversationsState = conversationsState.map(conv => {
+    if (conv.id === conversationId) {
+      const updatedMessages = [...conv.messages, message];
+      return {
+        ...conv,
+        messages: updatedMessages,
+        lastMessage: message
+      };
+    }
+    return conv;
+  });
+  return conversationsState;
+};

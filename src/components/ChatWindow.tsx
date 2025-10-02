@@ -60,9 +60,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
     : otherUser?.avatar;
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
+    if (newMessage.trim() && conversation) {
       triggerHaptic('impactLight');
-      console.log('Sending message:', newMessage);
+      
+      const message = {
+        id: `msg-${Date.now()}`,
+        text: newMessage,
+        senderId: currentUser.id,
+        timestamp: new Date(),
+        type: 'text' as const
+      };
+      
+      const updatedMessages = [...messages, message];
+      setMessages(updatedMessages);
       setNewMessage('');
     }
   };

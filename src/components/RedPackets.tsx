@@ -12,7 +12,15 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
   const [message, setMessage] = useState('');
   const [recipients, setRecipients] = useState<string[]>([]);
 
-  const redPackets = [
+
+  const contacts = [
+    { id: '1', name: 'Sophia Norman', avatar: '🇿🇦' },
+    { id: '2', name: 'Lunch gang', avatar: '🍽️' },
+    { id: '3', name: 'Roxie Crawford', avatar: '👩🏽' },
+    { id: '4', name: 'Lloyd Berry', avatar: '👨🏿' }
+  ];
+
+  const [redPackets, setRedPackets] = useState([
     {
       id: 1,
       sender: 'Nomsa Mthembu',
@@ -41,19 +49,23 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
       status: 'received',
       avatar: '🔥'
     }
-  ];
-
-  const contacts = [
-    { id: '1', name: 'Sophia Norman', avatar: '🇿🇦' },
-    { id: '2', name: 'Lunch gang', avatar: '🍽️' },
-    { id: '3', name: 'Roxie Crawford', avatar: '👩🏽' },
-    { id: '4', name: 'Lloyd Berry', avatar: '👨🏿' }
-  ];
+  ]);
 
   const sendRedPacket = () => {
     if (!amount || !message || recipients.length === 0) return;
     
-    // Add logic to send red packet
+    const newPacket = {
+      id: Date.now(),
+      sender: 'You',
+      amount: parseFloat(amount),
+      message,
+      timestamp: 'Just now',
+      status: 'sent' as const,
+      recipients: recipients.length,
+      avatar: '👨🏽‍💻'
+    };
+    
+    setRedPackets(prev => [newPacket, ...prev]);
     setShowSendPacket(false);
     setAmount('');
     setMessage('');
