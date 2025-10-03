@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, MoreVertical, Phone, Video, Trash2 } from 'lucide-react';
+import { Send, Smile, Paperclip, MoreVertical, Phone, Video, Trash2, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,10 @@ import { conversations, currentUser } from '@/data/dummyData';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { MessageSkeleton } from '@/components/LoadingStates';
+import { toast } from '@/hooks/use-toast';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { EmptyState } from '@/components/EmptyState';
+import { formatMessageTime } from '@/lib/formatTime';
 
 interface ChatWindowProps {
   conversationId: string;
@@ -17,6 +21,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [swipedMessageId, setSwipedMessageId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { triggerHaptic } = useHapticFeedback();
   
@@ -39,10 +45,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center bg-chat-bg">
-        <div className="text-center">
-          <h3 className="text-lg font-medium mb-2">Welcome to MzansiChat</h3>
-          <p className="text-muted-foreground">Select a conversation to start chatting</p>
-        </div>
+        <EmptyState
+          icon={MessageSquare}
+          title="Welcome to MzansiChat"
+          description="Select a conversation to start chatting with your contacts"
+        />
       </div>
     );
   }
@@ -74,13 +81,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
       const updatedMessages = [...messages, message];
       setMessages(updatedMessages);
       setNewMessage('');
+      
+      toast({
+        title: 'Message sent',
+        description: 'Your message has been delivered',
+      });
     }
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    triggerHaptic('impactMedium');
-    setMessages(prev => prev.filter(msg => msg.id !== messageId));
-    setSwipedMessageId(null);
+    setMessageToDelete(messageId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteMessage = () => {
+    if (messageToDelete) {
+      triggerHaptic('impactMedium');
+      setMessages(prev => prev.filter(msg => msg.id !== messageToDelete));
+      setSwipedMessageId(null);
+      setMessageToDelete(null);
+      setDeleteDialogOpen(false);
+      
+      toast({
+        title: 'Message deleted',
+        description: 'The message has been removed',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleMarkAsRead = (messageId: string) => {
@@ -88,13 +115,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
     setSwipedMessageId(null);
   };
 
-  const formatMessageTime = (date: Date) => {
-    return date.toLocaleTimeString('en-ZA', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false 
-    });
-  };
 
   return (
     <div className="flex-1 flex flex-col bg-chat-bg">
@@ -135,6 +155,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {isLoading ? (
           <MessageSkeleton />
+        ) : messages.length === 0 ? (
+          <EmptyState
+            icon={MessageSquare}
+            title="No messages yet"
+            description="Start the conversation by sending a message below"
+          />
         ) : (
           messages.map((message) => {
             const isCurrentUser = message.senderId === currentUser.id;
@@ -203,6 +229,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete message?"
+        description="This message will be permanently deleted. This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteMessage}
+        variant="destructive"
+      />
 
       {/* Message Input */}
       <div className="p-4 border-t border-border bg-card">

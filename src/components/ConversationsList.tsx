@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { conversations, currentUser } from '@/data/dummyData';
@@ -6,6 +7,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { ConversationSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
+import { toast } from '@/hooks/use-toast';
+import { EmptyState } from '@/components/EmptyState';
+import { formatChatTime } from '@/lib/formatTime';
 
 interface ConversationsListProps {
   selectedConversation: string | null;
@@ -28,6 +32,11 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
     setFilteredConversations([...conversations]);
     setIsLoading(false);
     triggerHaptic('notificationSuccess');
+    
+    toast({
+      title: 'Chats refreshed',
+      description: 'Your conversations are up to date',
+    });
   };
 
   const { containerRef, isRefreshing, pullDistance } = usePullToRefresh(handleRefresh);
@@ -35,23 +44,6 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
   const handleConversationSelect = (conversationId: string) => {
     triggerHaptic('selection');
     onSelectConversation(conversationId);
-  };
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString('en-ZA', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      });
-    } else {
-      return date.toLocaleDateString('en-ZA', { 
-        day: '2-digit', 
-        month: '2-digit' 
-      });
-    }
   };
 
   return (
@@ -71,6 +63,12 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
         
         {isLoading || isRefreshing ? (
           <ConversationSkeleton />
+        ) : filteredConversations.length === 0 ? (
+          <EmptyState
+            icon={MessageSquare}
+            title="No conversations"
+            description="Start chatting with your contacts to see conversations here"
+          />
         ) : (
           filteredConversations.map((conversation) => {
           const otherUser = conversation.isGroup 
@@ -115,7 +113,7 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium truncate">{displayName}</h3>
                     <span className="text-xs text-muted-foreground">
-                      {formatTime(conversation.lastMessage.timestamp)}
+                      {formatChatTime(conversation.lastMessage.timestamp)}
                     </span>
                   </div>
                   

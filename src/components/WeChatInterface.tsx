@@ -9,6 +9,8 @@ import RedPackets from '@/components/RedPackets';
 import GroupManagement from '@/components/GroupManagement';
 import StatusUpdates from '@/components/StatusUpdates';
 import Moments from '@/components/Moments';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { toast } from '@/hooks/use-toast';
 
 const WeChatInterface = () => {
   const [currentView, setCurrentView] = useState('chats');
@@ -21,7 +23,7 @@ const WeChatInterface = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showGroupManagement, setShowGroupManagement] = useState(false);
-  const [userStatus, setUserStatus] = useState('Available');
+  const [userStatus, setUserStatus] = useLocalStorage('userStatus', 'Available');
   const messagesEndRef = useRef(null);
   const { triggerHaptic } = useHapticFeedback();
 
@@ -157,8 +159,13 @@ const WeChatInterface = () => {
     }
   ];
 
-  const [chats, setChats] = useState(contacts);
+  const [chats, setChats] = useLocalStorage('chats', contacts);
   const [filteredChats, setFilteredChats] = useState(contacts);
+
+  // Sync filtered chats when chats change
+  useEffect(() => {
+    setFilteredChats(chats);
+  }, [chats]);
 
   const emojis = ['😊', '😂', '❤️', '👍', '🙏', '😍', '🤔', '😎', '🎉', '🔥', '💯', '✨', '🌟', '💪', '👌', '🤝'];
 
@@ -198,6 +205,11 @@ const WeChatInterface = () => {
       messages: [...selectedChat.messages, newMessage]
     });
     setMessage('');
+    
+    toast({
+      title: 'Message sent',
+      description: 'Your message has been delivered',
+    });
   };
 
   const handleKeyPress = (e) => {
@@ -251,6 +263,11 @@ const WeChatInterface = () => {
       ...selectedChat,
       messages: [...selectedChat.messages, newMessage]
     });
+    
+    toast({
+      title: 'Voice message sent',
+      description: 'Your voice message has been delivered',
+    });
   };
 
   const handleImageShare = () => {
@@ -279,6 +296,11 @@ const WeChatInterface = () => {
     setSelectedChat({
       ...selectedChat,
       messages: [...selectedChat.messages, newMessage]
+    });
+    
+    toast({
+      title: 'Photo shared',
+      description: 'Your photo has been sent',
     });
   };
 

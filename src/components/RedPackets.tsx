@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Gift, Plus, Clock, CheckCircle, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { EmptyState } from '@/components/EmptyState';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface RedPacketsProps {
   onBack: () => void;
@@ -11,6 +14,7 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [recipients, setRecipients] = useState<string[]>([]);
+  const { triggerHaptic } = useHapticFeedback();
 
 
   const contacts = [
@@ -54,6 +58,7 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
   const sendRedPacket = () => {
     if (!amount || !message || recipients.length === 0) return;
     
+    triggerHaptic('notificationSuccess');
     const newPacket = {
       id: Date.now(),
       sender: 'You',
@@ -70,6 +75,11 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
     setAmount('');
     setMessage('');
     setRecipients([]);
+    
+    toast({
+      title: 'Red packet sent!',
+      description: `Sent R${parseFloat(amount)} to ${recipients.length} ${recipients.length === 1 ? 'person' : 'people'}`,
+    });
   };
 
   if (showSendPacket) {
@@ -201,8 +211,19 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
       {/* Red Packets History */}
       <div className="flex-1 p-4 overflow-y-auto">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <div className="space-y-3">
-          {redPackets.map((packet, index) => (
+        {redPackets.length === 0 ? (
+          <EmptyState
+            icon={Gift}
+            title="No red packets yet"
+            description="Send your first red packet to celebrate with friends"
+            action={{
+              label: 'Send Red Packet',
+              onClick: () => setShowSendPacket(true),
+            }}
+          />
+        ) : (
+          <div className="space-y-3">
+            {redPackets.map((packet, index) => (
             <div 
               key={packet.id}
               className="bg-background rounded-xl p-4 shadow-lg border border-border/50 animate-fade-in"
@@ -239,8 +260,9 @@ const RedPackets: React.FC<RedPacketsProps> = ({ onBack }) => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

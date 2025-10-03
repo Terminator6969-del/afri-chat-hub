@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, Heart, MessageCircle, Send, Camera, Image as ImageIcon, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { toast } from '@/hooks/use-toast';
+import { EmptyState } from '@/components/EmptyState';
 
 interface MomentsProps {
   onBack: () => void;
@@ -104,6 +106,11 @@ const Moments: React.FC<MomentsProps> = ({ onBack }) => {
     setMoments(prev => [newMoment, ...prev]);
     setNewPostContent('');
     setShowNewPost(false);
+    
+    toast({
+      title: 'Moment posted',
+      description: 'Your moment has been shared with your friends',
+    });
   };
 
   const handleAddComment = (momentId: string) => {
@@ -126,6 +133,11 @@ const Moments: React.FC<MomentsProps> = ({ onBack }) => {
       return moment;
     }));
     setCommentText('');
+    
+    toast({
+      title: 'Comment added',
+      description: 'Your comment has been posted',
+    });
   };
 
   if (showNewPost) {
@@ -207,7 +219,18 @@ const Moments: React.FC<MomentsProps> = ({ onBack }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {moments.map((moment, index) => (
+        {moments.length === 0 ? (
+          <EmptyState
+            icon={Camera}
+            title="No moments yet"
+            description="Share your first moment with your friends"
+            action={{
+              label: 'Create Moment',
+              onClick: () => setShowNewPost(true),
+            }}
+          />
+        ) : (
+          moments.map((moment, index) => (
           <div
             key={moment.id}
             className="bg-background rounded-2xl p-4 shadow-lg animate-fade-in"
@@ -290,7 +313,8 @@ const Moments: React.FC<MomentsProps> = ({ onBack }) => {
               </div>
             )}
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

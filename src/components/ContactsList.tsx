@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Phone } from 'lucide-react';
+import { MessageCircle, Phone, Users } from 'lucide-react';
 import { users } from '@/data/dummyData';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { ContactSkeleton, PullRefreshIndicator } from '@/components/LoadingStates';
+import { toast } from '@/hooks/use-toast';
+import { EmptyState } from '@/components/EmptyState';
 
 interface ContactsListProps {
   onStartChat: (userId: string) => void;
@@ -23,6 +25,11 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
     setFilteredUsers([...users]);
     setIsLoading(false);
     triggerHaptic('notificationSuccess');
+    
+    toast({
+      title: 'Contacts refreshed',
+      description: 'Your contact list is up to date',
+    });
   };
 
   const { containerRef, isRefreshing, pullDistance } = usePullToRefresh(handleRefresh);
@@ -30,11 +37,20 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
   const handleStartChat = (userId: string) => {
     triggerHaptic('selection');
     onStartChat(userId);
+    
+    toast({
+      title: 'Chat started',
+      description: 'Opening conversation...',
+    });
   };
 
   const handleCallUser = () => {
     triggerHaptic('impactMedium');
-    // Handle call functionality
+    
+    toast({
+      title: 'Calling...',
+      description: 'Call feature coming soon',
+    });
   };
 
   return (
@@ -55,6 +71,12 @@ const ContactsList: React.FC<ContactsListProps> = ({ onStartChat }) => {
         
         {isLoading || isRefreshing ? (
           <ContactSkeleton />
+        ) : filteredUsers.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="No contacts"
+            description="Add contacts to start chatting with them"
+          />
         ) : (
           filteredUsers.map((user) => (
           <div

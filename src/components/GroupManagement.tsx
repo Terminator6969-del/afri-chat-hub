@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Settings, UserPlus, UserMinus, Crown, Shield, Mic, MicOff, Volume2, VolumeX, MoreHorizontal, Edit3, Camera, Bell, BellOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface GroupManagementProps {
   group: {
@@ -21,11 +24,14 @@ interface GroupManagementProps {
 const GroupManagement: React.FC<GroupManagementProps> = ({ group, onBack }) => {
   const [activeTab, setActiveTab] = useState<'members' | 'settings'>('members');
   const [showAddMember, setShowAddMember] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [groupSettings, setGroupSettings] = useState({
     notifications: true,
     onlyAdminsCanSend: false,
     joinApproval: true
   });
+  const { triggerHaptic } = useHapticFeedback();
 
   const availableContacts = [
     { id: '5', name: 'Sipho Dlamini', avatar: '👨🏽' },
@@ -37,18 +43,45 @@ const GroupManagement: React.FC<GroupManagementProps> = ({ group, onBack }) => {
   const [members, setMembers] = useState(group.members);
 
   const promoteMember = (memberId: string) => {
+    triggerHaptic('selection');
+    const member = members.find(m => m.id === memberId);
     setMembers(prev => prev.map(member => 
       member.id === memberId 
         ? { ...member, role: member.role === 'admin' ? 'member' : 'admin' }
         : member
     ));
+    
+    toast({
+      title: member?.role === 'admin' ? 'Member demoted' : 'Member promoted',
+      description: member?.role === 'admin' 
+        ? `${member.name} is now a member` 
+        : `${member?.name} is now an admin`,
+    });
   };
 
   const removeMember = (memberId: string) => {
-    setMembers(prev => prev.filter(member => member.id !== memberId));
+    setMemberToRemove(memberId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveMember = () => {
+    if (memberToRemove) {
+      triggerHaptic('impactMedium');
+      const member = members.find(m => m.id === memberToRemove);
+      setMembers(prev => prev.filter(member => member.id !== memberToRemove));
+      setMemberToRemove(null);
+      setDeleteDialogOpen(false);
+      
+      toast({
+        title: 'Member removed',
+        description: `${member?.name} has been removed from the group`,
+        variant: 'destructive',
+      });
+    }
   };
 
   const addMember = (contactId: string) => {
+    triggerHaptic('notificationSuccess');
     const contact = availableContacts.find(c => c.id === contactId);
     if (contact) {
       const newMember = {
@@ -58,6 +91,11 @@ const GroupManagement: React.FC<GroupManagementProps> = ({ group, onBack }) => {
       };
       setMembers(prev => [...prev, newMember]);
       setShowAddMember(false);
+      
+      toast({
+        title: 'Member added',
+        description: `${contact.name} has been added to the group`,
+      });
     }
   };
 
@@ -246,6 +284,18 @@ const GroupManagement: React.FC<GroupManagementProps> = ({ group, onBack }) => {
           </div>
         )}
       </div>
+
+      {/* Confirm Remove Member Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Remove member?"
+        description="This member will be removed from the group. They can be added back later."
+        confirmText="Remove"
+        cancelText="Cancel"
+        onConfirm={confirmRemoveMember}
+        variant="destructive"
+      />
 
       {/* Add Member Modal */}
       {showAddMember && (

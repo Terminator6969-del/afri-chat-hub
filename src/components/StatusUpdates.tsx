@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Edit3, Camera, Smile, Clock, Eye, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface StatusUpdatesProps {
   onBack: () => void;
@@ -10,6 +12,7 @@ const StatusUpdates: React.FC<StatusUpdatesProps> = ({ onBack }) => {
   const [showCreateStatus, setShowCreateStatus] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [selectedBg, setSelectedBg] = useState(0);
+  const { triggerHaptic } = useHapticFeedback();
 
   const myStatus = {
     id: '1',
@@ -64,10 +67,16 @@ const StatusUpdates: React.FC<StatusUpdatesProps> = ({ onBack }) => {
 
   const createStatus = () => {
     if (!statusText.trim()) return;
-    // Add logic to create status
+    
+    triggerHaptic('notificationSuccess');
     setShowCreateStatus(false);
     setStatusText('');
     setSelectedBg(0);
+    
+    toast({
+      title: 'Status updated',
+      description: 'Your status has been shared and is visible for 24 hours',
+    });
   };
 
   if (showCreateStatus) {
