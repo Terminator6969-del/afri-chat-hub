@@ -1081,6 +1081,8 @@ const WeChatInterface = () => {
           <MiniPrograms onBack={() => setCurrentView('chats')} />
         ) : currentView === 'red-packets' ? (
           <RedPackets onBack={() => setCurrentView('chats')} />
+        ) : currentView === 'moments' ? (
+          <Moments onBack={() => setCurrentView('discover')} />
         ) : currentView === 'status' ? (
           <StatusUpdates onBack={() => setCurrentView('me')} />
         ) : currentView === 'me' ? (
@@ -1209,7 +1211,7 @@ const WeChatInterface = () => {
       )}
 
       {/* Bottom Navigation - Hide when in chat view or special views */}
-      {!selectedChat && !['mini-programs', 'red-packets', 'status'].includes(currentView) && <BottomNavigation />}
+      {!selectedChat && !['mini-programs', 'red-packets', 'status', 'moments', 'official'].includes(currentView) && <BottomNavigation />}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Paperclip, MoreVertical, Phone, Video, Trash2, MessageSquare } from 'lucide-react';
+import { Send, Smile, Paperclip, MoreVertical, Phone, Video, Trash2, MessageSquare, ArrowLeft, Info } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,11 @@ import { formatMessageTime } from '@/lib/formatTime';
 
 interface ChatWindowProps {
   conversationId: string;
+  onBack?: () => void;
+  onShowInfo?: () => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, onShowInfo }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -121,6 +123,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="w-9 h-9 hover:bg-muted rounded-full flex items-center justify-center transition-colors md:hidden"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
           <Avatar className="w-10 h-10">
             <AvatarImage src={displayAvatar} alt={displayName} />
             <AvatarFallback>
@@ -139,13 +149,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId }) => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" title="Voice call">
             <Phone className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" title="Video call">
             <Video className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon">
+          {onShowInfo && (
+            <Button variant="ghost" size="icon" onClick={onShowInfo} title="Chat info">
+              <Info className="w-4 h-4" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" title="More options">
             <MoreVertical className="w-4 h-4" />
           </Button>
         </div>
