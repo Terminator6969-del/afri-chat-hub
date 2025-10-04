@@ -697,14 +697,6 @@ const WeChatInterface = () => {
     </div>
   );
 
-  // Handle different views
-  if (currentView === 'official' || currentView === 'contacts') {
-    return (
-      <div className="max-w-sm mx-auto h-screen bg-card shadow-2xl overflow-hidden">
-        <OfficialAccountsView />
-      </div>
-    );
-  }
 
   const DiscoverView = () => (
     <div className="h-full flex flex-col bg-gray-50">
@@ -873,139 +865,8 @@ const WeChatInterface = () => {
   );
 
 
-  if (currentView === 'moments') {
-    return (
-      <div className="max-w-sm mx-auto h-screen bg-white shadow-2xl overflow-hidden">
-        <Moments onBack={() => setCurrentView('discover')} />
-      </div>
-    );
-  }
 
-  if (currentView === 'discover') {
-    return (
-      <div className="max-w-sm mx-auto h-screen bg-white shadow-2xl overflow-hidden">
-        <DiscoverView />
-      </div>
-    );
-  }
 
-  if (currentView === 'me') {
-    return (
-      <div className="max-w-sm mx-auto h-screen bg-gradient-to-br from-background to-muted/20 shadow-2xl overflow-hidden">
-        {/* Profile Header */}
-        <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-2xl overflow-hidden">
-                  <span className="text-white">👨🏽‍💻</span>
-                </div>
-                <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-muted border-2 border-background rounded-full flex items-center justify-center hover:bg-muted/80 transition-all duration-200">
-                  <Camera className="w-3 h-3 text-muted-foreground" />
-                </button>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-foreground mb-1">Thabo Mthembu</h2>
-                <p className="text-sm text-muted-foreground">Weixin ID: tmthembu_za</p>
-              </div>
-            </div>
-            <button className="w-8 h-8 hover:bg-muted rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95">
-              <QrCode className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 bg-muted/50 hover:bg-muted px-4 py-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95">
-              <Plus className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground font-medium">Status</span>
-            </button>
-            <button className="w-10 h-10 bg-muted/50 hover:bg-muted rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95">
-              <Camera className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-
-        {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto">
-          {[
-            { id: 'pay', icon: Wallet, label: 'Pay and Services', color: 'from-green-500 to-emerald-600' },
-            { id: 'favorites', icon: Heart, label: 'Favorites', color: 'from-orange-500 to-amber-600' },
-            { id: 'posts', icon: Image, label: 'My Posts', color: 'from-blue-500 to-cyan-600' },
-            { id: 'cards', icon: CreditCard, label: 'Cards & Offers', color: 'from-purple-500 to-violet-600' },
-            { id: 'stickers', icon: Smile, label: 'Sticker Gallery', color: 'from-yellow-500 to-orange-500' },
-            { id: 'settings', icon: Settings, label: 'Settings', color: 'from-gray-500 to-slate-600' }
-          ].map((item, index) => (
-            <button
-              key={item.id}
-              className={cn(
-                "w-full flex items-center gap-4 p-4 hover:bg-background/60 transition-all duration-200 border-b border-border/30 group animate-fade-in"
-              )}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className={cn(
-                "w-10 h-10 bg-gradient-to-br rounded-xl flex items-center justify-center transform transition-all duration-200 group-hover:scale-110",
-                item.color
-              )}>
-                <item.icon className="w-5 h-5 text-white" />
-              </div>
-              <span className="flex-1 text-left text-foreground font-medium">{item.label}</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all duration-200" />
-            </button>
-          ))}
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="bg-background/90 backdrop-blur-xl border-t border-border/50">
-          <div className="flex px-2">
-            {[
-              { id: 'chats', icon: 'chats', label: 'Chats', hasNotification: true },
-              { id: 'contacts', icon: Users, label: 'Contacts' },
-              { id: 'discover', icon: Compass, label: 'Discover', hasGlow: true },
-              { id: 'me', icon: User, label: 'Me' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setCurrentView(tab.id)}
-                className={cn(
-                  "flex-1 py-3 flex flex-col items-center gap-1.5 transition-all duration-200",
-                  currentView === tab.id ? 'text-primary scale-105' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <div className="relative">
-                  {tab.id === 'chats' ? (
-                    <div className={cn(
-                      "w-6 h-6 rounded-lg bg-current opacity-20 relative",
-                       tab.id === 'chats' && 'animate-pulse'
-                    )}>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-4 h-4 border-2 border-current rounded"></div>
-                      </div>
-                      {tab.hasNotification && tab.id === 'chats' && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <tab.icon className={cn(
-                        "w-6 h-6 transition-transform duration-200",
-                        currentView === tab.id && 'scale-110'
-                      )} />
-                      {tab.hasGlow && tab.id === 'discover' && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center animate-pulse">
-                          <div className="w-1 h-1 bg-white rounded-full"></div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs font-medium">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Bottom Navigation Component (used across all views)
   const BottomNavigation = () => (
