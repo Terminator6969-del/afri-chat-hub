@@ -150,6 +150,11 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Smooth scrolling for all scroll containers */
+  * {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer utilities {

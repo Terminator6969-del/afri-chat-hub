@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { conversations, currentUser } from '@/data/dummyData';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { MessageSkeleton } from '@/components/LoadingStates';
 import { toast } from '@/hooks/use-toast';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -25,8 +27,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, onShowI
   const [swipedMessageId, setSwipedMessageId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { triggerHaptic } = useHapticFeedback();
+  const scrollRef = useScrollPosition(`chat-${conversationId}`);
+  
+  const { swipeProgress, touchHandlers } = useSwipeBack({
+    onSwipeBack: () => onBack?.(),
+    threshold: 100,
+  });
   
   const conversation = conversations.find(c => c.id === conversationId);
   
@@ -72,22 +81,37 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, onShowI
     if (newMessage.trim() && conversation) {
       triggerHaptic('impactLight');
       
+      // Optimistic UI update - show message immediately
       const message = {
         id: `msg-${Date.now()}`,
         text: newMessage,
         senderId: currentUser.id,
         timestamp: new Date(),
-        type: 'text' as const
+        type: 'text' as const,
+        status: 'sending' as const
       };
       
       const updatedMessages = [...messages, message];
       setMessages(updatedMessages);
       setNewMessage('');
+      setIsSending(true);
       
-      toast({
-        title: 'Message sent',
-        description: 'Your message has been delivered',
-      });
+      // Simulate network delay, then confirm sent
+      setTimeout(() => {
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === message.id 
+              ? { ...msg, status: 'sent' as const }
+              : msg
+          )
+        );
+        setIsSending(false);
+        
+        toast({
+          title: 'Message sent',
+          description: 'Your message has been delivered',
+        });
+      }, 500);
     }
   };
 
@@ -119,7 +143,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, onShowI
 
 
   return (
-    <div className="flex-1 flex flex-col bg-chat-bg">
+    <div 
+      className="flex-1 flex flex-col bg-chat-bg animate-slide-in-right relative"
+      {...touchHandlers}
+      style={{
+        transform: `translateX(${swipeProgress * 100}%)`,
+        transition: swipeProgress === 0 ? 'transform 0.3s ease-out' : 'none',
+      }}
+    >
+      {/* Swipe Back Indicator */}
+      {swipeProgress > 0 && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-50 opacity-${Math.min(swipeProgress * 2, 1)}">
+          <ArrowLeft className="w-8 h-8 text-primary" />
+        </div>
+      )}
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
