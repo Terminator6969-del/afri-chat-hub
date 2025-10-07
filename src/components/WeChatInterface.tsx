@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, startTransition } from 'react';
 import { Send, Plus, Search, ArrowLeft, MoreHorizontal, Camera, Users, Compass, User, MapPin, ChevronRight, CreditCard, Zap, Smile, Paperclip, Video, Phone, QrCode, Settings, Heart, Image, Gift, Wallet, Mic, FileText, UserPlus, ScanLine, X, CircleDot, Gamepad2, MessageSquare, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -361,8 +361,9 @@ const WeChatInterface = () => {
                   </button>
                   <button 
                     onClick={() => {
+                      triggerHaptic();
                       setShowPlusMenu(false);
-                      setCurrentView('red-packets');
+                      startTransition(() => setCurrentView('red-packets'));
                     }}
                     className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
                   >
@@ -371,8 +372,9 @@ const WeChatInterface = () => {
                   </button>
                   <button 
                     onClick={() => {
+                      triggerHaptic();
                       setShowPlusMenu(false);
-                      setCurrentView('mini-programs');
+                      startTransition(() => setCurrentView('mini-programs'));
                     }}
                     className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-all"
                   >
@@ -412,7 +414,10 @@ const WeChatInterface = () => {
           <span className="text-xs text-muted-foreground/70">{officialAccounts.length}</span>
         </div>
         <button 
-          onClick={() => setCurrentView('official')}
+          onClick={() => {
+            triggerHaptic();
+            startTransition(() => setCurrentView('official'));
+          }}
           className="w-full flex items-center justify-between group hover:bg-muted/20 rounded-lg p-2 transition-all duration-200"
         >
           <div className="flex items-center gap-2">
@@ -488,12 +493,15 @@ const WeChatInterface = () => {
       <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setCurrentView('chats')}
-              className="w-8 h-8 hover:bg-muted rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-            >
-              <ArrowLeft className="w-5 h-5 text-foreground" />
-            </button>
+          <button 
+            onClick={() => {
+              triggerHaptic();
+              startTransition(() => setCurrentView('chats'));
+            }}
+            className="w-8 h-8 hover:bg-muted rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </button>
             <h1 className="text-xl font-semibold text-foreground">Official Accounts</h1>
           </div>
           <button className="w-8 h-8 bg-muted/50 hover:bg-muted transition-all duration-200 rounded-full flex items-center justify-center hover:scale-110 active:scale-95">
@@ -716,7 +724,10 @@ const WeChatInterface = () => {
         {/* Moments */}
         <div className="bg-white border-b border-gray-100">
           <button 
-            onClick={() => setCurrentView('moments')}
+            onClick={() => {
+              triggerHaptic();
+              startTransition(() => setCurrentView('moments'));
+            }}
             className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-4">
@@ -881,8 +892,11 @@ const WeChatInterface = () => {
           <button
             key={tab.id}
             onClick={() => {
-              setCurrentView(tab.id);
-              setSelectedChat(null);
+              triggerHaptic();
+              startTransition(() => {
+                setCurrentView(tab.id);
+                setSelectedChat(null);
+              });
             }}
             className={cn(
               "flex-1 py-3 flex flex-col items-center gap-1.5 transition-all duration-200",
@@ -965,7 +979,10 @@ const WeChatInterface = () => {
             <div className="flex-1 p-4">
               <div className="space-y-2">
                 <button 
-                  onClick={() => setCurrentView('status')}
+                  onClick={() => {
+                    triggerHaptic();
+                    startTransition(() => setCurrentView('status'));
+                  }}
                   className="flex items-center justify-between p-3 bg-background/50 hover:bg-background rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
